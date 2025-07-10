@@ -3,7 +3,8 @@ import { useDropzone } from 'react-dropzone';
 import api from '../../utils/api';
 
 const FeedbackForm = () => {
-  const [form, setForm] = useState({ category: '', content: '', imageUrl: '' });
+  const [form, setForm] = useState({ category: '', content: '' });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
@@ -11,13 +12,9 @@ const FeedbackForm = () => {
     const file = acceptedFiles[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-      setForm({ ...form, imageUrl: 'blob-url-future' }); // Placeholder
-    };
-    reader.readAsDataURL(file);
-  }, [form]);
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { 'image/*': [] },
@@ -31,18 +28,33 @@ const FeedbackForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!form.category || !form.content) {
       setMessage('Please fill all required fields.');
       return;
     }
 
+    const formData = new FormData();
+    formData.append('category', form.category);
+    formData.append('content', form.content);
+    if (selectedImage) {
+      formData.append('image', selectedImage); // 👈 matches backend's IFormFile image
+    }
+
     try {
-      await api.post('/api/Feedback', form);
+      await api.post('/api/Feedback', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
       setMessage('Feedback submitted successfully!');
-      setForm({ category: '', content: '', imageUrl: '' });
+      setForm({ category: '', content: '' });
+      setSelectedImage(null);
       setImagePreview(null);
-    } catch (err: unknown) {
-      setMessage('Something went wrong while submitting.' + err);
+    } catch (err) {
+      console.error(err);
+      setMessage('Something went wrong while submitting.');
     }
   };
 
@@ -62,10 +74,7 @@ const FeedbackForm = () => {
         <textarea name="content" rows={4} onChange={handleChange} value={form.content} required />
 
         <label>Image Upload (optional)</label>
-        <div
-          {...getRootProps()}
-          className={`dropzone ${isDragActive ? 'active' : ''}`}
-        >
+        <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
           <input {...getInputProps()} />
           {imagePreview ? (
             <img src={imagePreview} alt="Preview" className="preview-img" />
