@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import './Layout.css'; // Import the CSS.
 
 const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <>
       <Navbar />
-      <main style={{ flex: 1, padding: '2rem' }}>{children}</main>
+      <main className="layout-main">{children}</main>
       <Footer />
     </>
   );

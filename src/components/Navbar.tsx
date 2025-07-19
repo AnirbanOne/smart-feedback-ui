@@ -1,44 +1,119 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import './Navbar.css';
 
 const Navbar = () => {
   const { role, username, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const logout = () => {
     clearAuth();
     navigate('/login');
   };
 
+  const isActivePage = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
-    <nav className="glass-card" style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 2rem', margin: '1rem' }}>
-      <Link to="/" style={{ fontWeight: 'bold', fontSize: '1.2rem', color: '#333' }}>
-        🎯 Smart Feedback
-      </Link>
+    <nav className="navbar-glass">
+      <div className="navbar-background">
+        {/* <div className="navbar-stars">
+          {[...Array(15)].map((_, idx) => (
+            <div
+              key={idx}
+              className="navbar-star"
+              style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 2}s`
+              }}
+            />
+          ))}
+        </div> */}
+      </div>
+      
+      <div className="navbar-content">
+        <Link to="/" className="navbar-logo">
+          <div className="logo-wrapper">
+            <span role="img" aria-label="logo" className="navbar-logo-icon">🎯</span>
+            <div className="logo-pulse"></div>
+          </div>
+          <div className="logo-text-wrapper">
+            <span className="navbar-logo-text">Smart Feedback</span>
+            <span className="navbar-logo-subtitle">Portal</span>
+          </div>
+        </Link>
 
-      {role && (
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          {role === 'User' && (
-            <>
-              <Link to="/user">Dashboard</Link>
-              <Link to="/user/feedback">Submit</Link>
-              <Link to="/user/history">My Feedback</Link>
-            </>
-          )}
+        {role && (
+          <div className="nav-menu">
+            <div className="nav-links-wrapper">
+              {role === 'User' && (
+                <>
+                  <Link 
+                    to="/user" 
+                    className={`nav-link ${isActivePage('/user') ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link 
+                    to="/user/feedback" 
+                    className={`nav-link ${isActivePage('/user/feedback') ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">✍️</span>
+                    <span>Submit</span>
+                  </Link>
+                  <Link 
+                    to="/user/history" 
+                    className={`nav-link ${isActivePage('/user/history') ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">📋</span>
+                    <span>My Feedback</span>
+                  </Link>
+                </>
+              )}
 
-          {role === 'Admin' && (
-            <>
-              <Link to="/admin">Dashboard</Link>
-              <Link to="/admin/all-feedbacks">Feedbacks</Link>
-            </>
-          )}
+              {role === 'Admin' && (
+                <>
+                  <Link 
+                    to="/admin" 
+                    className={`nav-link ${isActivePage('/admin') ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link 
+                    to="/admin/all-feedbacks" 
+                    className={`nav-link ${isActivePage('/admin/all-feedbacks') ? 'active' : ''}`}
+                  >
+                    <span className="nav-icon">📋</span>
+                    <span>Feedbacks</span>
+                  </Link>
+                </>
+              )}
+            </div>
 
-          <span style={{ fontWeight: 600 }}>{username}</span>
-          <button onClick={logout} style={{ background: 'tomato', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-            Logout
-          </button>
-        </div>
-      )}
+            <div className="nav-user-section">
+              <div className="nav-user">
+                <div className="user-avatar">
+                  {username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="user-info">
+                  <span className="user-name">{username}</span>
+                  <span className="user-role">{role}</span>
+                </div>
+              </div>
+              
+              <button className="nav-btn nav-btn-logout" onClick={logout}>
+                <span className="logout-icon">🚪</span>
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </nav>
   );
 };

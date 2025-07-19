@@ -1,0 +1,13 @@
+.layout-main {
+  flex: 1;
+  /* padding: 2rem; */
+  /* Full area coverage */
+  min-height: calc(100vh - var(--navbar-height) - var(--footer-height)); /* adjust if you have fixed navbar/footer heights */
+  background-image: url('https://static.vecteezy.com/system/resources/previews/027/148/779/non_2x/beautiful-panoramic-view-of-a-dark-forest-with-purple-and-blue-silhouettes-of-trees-and-mountains-against-a-violet-sky-scenic-landscape-perfect-for-travel-and-adventure-backgrounds-vector.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Optional: overlay */
+  position: relative;
+  z-index: 0;
+}
