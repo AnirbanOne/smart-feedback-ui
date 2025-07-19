@@ -76,11 +76,10 @@ const AdminDashboard = () => {
 
   const totalFeedback = Object.values(summary.category).reduce((a, b) => a + b, 0);
   const categories = Object.keys(summary.category).length;
-  const sentiments = Object.keys(summary.sentiment).length;
   const positiveCount = summary.sentiment['Positive'] || 0;
   const satisfactionRate = totalFeedback > 0 ? Math.round((positiveCount / totalFeedback) * 100) : 0;
 
-  // Purple theme complementary colors
+  // Chart color definitions
   const pieColors = ['#8937ff', '#b580fc', '#6d29e7', '#9f5bff', '#7c40fa'];
   const barColors = ['#ffc94d', '#ffe89e', '#ffb366'];
   const lineColor = '#8937ff';
@@ -123,6 +122,7 @@ const AdminDashboard = () => {
     }]
   };
 
+  // ChartJS options -- font.weight must be 'bold' or another allowed string/number
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
       legend: {
         labels: {
           color: '#fff',
-          font: { weight: 'bold', size: 12 },
+          font: { weight: 'bold' as const, size: 12 },
           padding: 20,
           usePointStyle: true
         }
@@ -145,17 +145,18 @@ const AdminDashboard = () => {
     },
     scales: {
       x: {
-        ticks: { color: '#fff', font: { weight: 'bold' } },
+        ticks: { color: '#fff', font: { weight: 'bold' as const } },
         grid: { color: 'rgba(255, 255, 255, 0.1)' }
       },
       y: {
         beginAtZero: true,
-        ticks: { color: '#fff', font: { weight: 'bold' } },
+        ticks: { color: '#fff', font: { weight: 'bold' as const } },
         grid: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     }
   };
 
+  // Provide correct typing for pie options, including bottom legend position
   const pieOptions: ChartOptions<'pie'> = {
     ...chartOptions,
     plugins: {
@@ -210,7 +211,6 @@ const AdminDashboard = () => {
             </h1>
             <p className="dashboard-subtitle">Comprehensive insights into user feedback</p>
           </div>
-          
           <div className="quick-stats">
             <div className="quick-stat-item">
               <div className="stat-icon">💬</div>
@@ -297,21 +297,33 @@ const AdminDashboard = () => {
             <div className="insight-icon">🎯</div>
             <div className="insight-content">
               <h4>Most Active Category</h4>
-              <p>{Object.keys(summary.category).reduce((a, b) => summary.category[a] > summary.category[b] ? a : b)}</p>
+              <p>
+                {Object.keys(summary.category).reduce((a, b) =>
+                  summary.category[a] > summary.category[b] ? a : b
+                )}
+              </p>
             </div>
           </div>
           <div className="insight-card">
             <div className="insight-icon">⭐</div>
             <div className="insight-content">
               <h4>Dominant Sentiment</h4>
-              <p>{Object.keys(summary.sentiment).reduce((a, b) => summary.sentiment[a] > summary.sentiment[b] ? a : b)}</p>
+              <p>
+                {Object.keys(summary.sentiment).reduce((a, b) =>
+                  summary.sentiment[a] > summary.sentiment[b] ? a : b
+                )}
+              </p>
             </div>
           </div>
           <div className="insight-card">
             <div className="insight-icon">📊</div>
             <div className="insight-content">
               <h4>Avg. Daily Feedback</h4>
-              <p>{Math.round(totalFeedback / Object.keys(summary.date).length)} per day</p>
+              <p>
+                {Object.keys(summary.date).length > 0
+                  ? Math.round(totalFeedback / Object.keys(summary.date).length)
+                  : 0} per day
+              </p>
             </div>
           </div>
         </div>
