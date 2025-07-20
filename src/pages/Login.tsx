@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { useAuthStore } from "../store/authStore";
 import { jwtDecode } from "jwt-decode";
@@ -304,7 +304,7 @@ const Login = () => {
             {/* Footer */}
             <div className="login-footer">
               Don't have account yet?
-              <a href="/register">New Account</a>
+              <Link to="/register">New Account</Link>
             </div>
           </form>
         </div>
