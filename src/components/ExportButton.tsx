@@ -1,22 +1,16 @@
-import { useAuthStore } from '../store/authStore';
+// import { useAuthStore } from '../store/authStore';
+import api from '../utils/api'; // Adjust the import path based on your file structure
 
 const ExportButton = () => {
-  const token = useAuthStore((state) => state.token);
-
   const handleExport = async () => {
     try {
-      const response = await fetch('http://localhost:5166/api/FeedbackExport/excel', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const response = await api.get('/api/FeedbackExport/excel', {
+        responseType: 'blob' // Important for file downloads
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to export data');
-      }
-
-      const blob = await response.blob();
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/octet-stream' 
+      });
       const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');

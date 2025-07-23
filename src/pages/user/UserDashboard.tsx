@@ -2,12 +2,13 @@ import { useAuthStore } from "../../store/authStore";
 import { useEffect, useState } from "react";
 import "./UserDashboard.css";
 import { useNavigate } from "react-router-dom";
+import api from "../../utils/api";
 
 const shootingStarsCount = 2;
 
 interface DashboardStats {
   totalFeedbacks: number;
-  pendingFeedbacks: number;
+  thisWeekFeedbacks: number; // Updated from pendingFeedbacks
   categories: string[];
   recentFeedback: {
     category: string;
@@ -15,6 +16,15 @@ interface DashboardStats {
     date: string;
     sentiment: string;
   } | null;
+}
+
+// Add interface for API feedback response
+interface Feedback {
+  category: string;
+  content: string;
+  sentiment: string;
+  submittedAt: string;
+  user: { fullName: string; email: string };
 }
 
 const UserDashboard = () => {
@@ -32,7 +42,7 @@ const UserDashboard = () => {
   );
   const [stats, setStats] = useState<DashboardStats>({
     totalFeedbacks: 0,
-    pendingFeedbacks: 0,
+    thisWeekFeedbacks: 0, // Updated from pendingFeedbacks
     categories: [],
     recentFeedback: null,
   });
@@ -61,25 +71,70 @@ const UserDashboard = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // Load stats
+  // Load stats - Updated to use real API data
   useEffect(() => {
     const loadStats = async () => {
-      setTimeout(() => {
+      try {
+        const response = await api.get('/api/Feedback/my');
+        const feedbacks: Feedback[] = response.data;
+
+        // Calculate stats from real data
+        const totalFeedbacks = feedbacks.length;
+        const categories = [...new Set(feedbacks.map(f => f.category))];
+        
+        // Calculate feedbacks from the last 7 days
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const thisWeekFeedbacks = feedbacks.filter(f => 
+          new Date(f.submittedAt) >= oneWeekAgo
+        ).length;
+
+        // Get most recent feedback
+        const sortedFeedbacks = feedbacks.sort((a, b) => 
+          new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        );
+        
+        const mostRecent = sortedFeedbacks[0];
+        const recentFeedback = mostRecent ? {
+          category: mostRecent.category,
+          content: mostRecent.content,
+          date: getRelativeTime(mostRecent.submittedAt),
+          sentiment: mostRecent.sentiment,
+        } : null;
+
         setStats({
-          totalFeedbacks: 12,
-          pendingFeedbacks: 2,
-          categories: ["Sports", "Academics", "Events"],
-          recentFeedback: {
-            category: "Sports",
-            content: "Great facilities and equipment!",
-            date: "2 days ago",
-            sentiment: "Positive",
-          },
+          totalFeedbacks,
+          thisWeekFeedbacks,
+          categories,
+          recentFeedback,
         });
-      }, 1000);
+      } catch (error) {
+        console.error('Failed to load stats:', error);
+        // Fallback to empty stats on error
+        setStats({
+          totalFeedbacks: 0,
+          thisWeekFeedbacks: 0,
+          categories: [],
+          recentFeedback: null,
+        });
+      }
     };
+
     loadStats();
   }, []);
+
+  // Helper function to get relative time
+  const getRelativeTime = (dateString: string): string => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
+    return `${Math.floor(diffInSeconds / 604800)} weeks ago`;
+  };
 
   const quickActions = [
     {
@@ -161,10 +216,10 @@ const UserDashboard = () => {
               </div>
             </div>
             <div className="stat-card" style={{ animationDelay: "0.2s" }}>
-              <div className="stat-icon">⏳</div>
+              <div className="stat-icon">🕒</div>
               <div className="stat-content">
-                <div className="stat-number">{stats.pendingFeedbacks}</div>
-                <div className="stat-label">Pending Review</div>
+                <div className="stat-number">{stats.thisWeekFeedbacks}</div>
+                <div className="stat-label">This Week</div>
               </div>
             </div>
             <div className="stat-card" style={{ animationDelay: "0.3s" }}>
